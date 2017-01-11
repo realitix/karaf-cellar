@@ -63,6 +63,11 @@ public class InstallFeatureCommand extends FeatureCommandSupport {
             return null;
         }
 
+        ClassLoader originalClassLoader = Thread.currentThread().getContextClassLoader();
+                try {
+                    Thread.currentThread().setContextClassLoader(getClass().getClassLoader());
+
+
         Map<String, FeatureState> clusterFeatures = clusterManager.getMap(Constants.FEATURES_MAP + Configurations.SEPARATOR + groupName);
 
         // try to resolve the feature version if not provided
@@ -98,6 +103,10 @@ public class InstallFeatureCommand extends FeatureCommandSupport {
         clusterFeatureState.setInstalled(Boolean.TRUE);
         clusterFeatures.put(feature + "/" + version, clusterFeatureState);
         // TODO does it make sense to also update the cluster bundles, I don't think so ...
+        
+                }finally {
+                                Thread.currentThread().setContextClassLoader(originalClassLoader);
+                                        }
 
         // broadcast the cluster event
         ClusterFeaturesEvent event = new ClusterFeaturesEvent(feature, version, noClean, noRefresh, FeatureEvent.EventType.FeatureInstalled);
